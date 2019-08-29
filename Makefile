@@ -5,7 +5,7 @@ build:
 
 .PHONY: test
 test:
-	@gotest -v ./...
+	@go test -v ./...
 
 
 .PHONY: coverage
