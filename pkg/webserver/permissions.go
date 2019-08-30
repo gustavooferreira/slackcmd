@@ -1,15 +1,16 @@
 package webserver
 
 type Permissions struct {
+	TeamID  string
 	Global  []string
 	Channel map[string][]string
 }
 
-func NewPermissions(globalPermissions []string, channelPermissions map[string][]string) Permissions {
+func NewPermissions(teamID string, globalPermissions []string, channelPermissions map[string][]string) Permissions {
 	if channelPermissions == nil {
 		channelPermissions = make(map[string][]string)
 	}
-	return Permissions{Global: globalPermissions, Channel: channelPermissions}
+	return Permissions{TeamID: teamID, Global: globalPermissions, Channel: channelPermissions}
 }
 
 func (p *Permissions) AddGlobal(userID string) {
