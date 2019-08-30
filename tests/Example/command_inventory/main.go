@@ -4,15 +4,19 @@ import (
 	"fmt"
 
 	"github.com/gustavooferreira/slackcmd/pkg/core"
+	"github.com/gustavooferreira/slackcmd/pkg/webserver"
 )
 
-func cmd1([]string) string {
+func cmd1(rc webserver.RequestContext, options []string) string {
+	fmt.Printf("Request Context %+v\n", rc)
 	return "YOLO1!"
 }
-func cmd2([]string) string {
+func cmd2(rc webserver.RequestContext, options []string) string {
+	fmt.Printf("Request Context %+v\n", rc)
 	return "YOLO2!"
 }
-func cmd3([]string) string {
+func cmd3(rc webserver.RequestContext, options []string) string {
+	fmt.Printf("Request Context %+v\n", rc)
 	return "YOLO3!"
 }
 
@@ -51,7 +55,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		fmt.Println(f([]string{}))
+		fmt.Println(f(webserver.RequestContext{}, []string{}))
 	}
 
 	fmt.Println("--------------------------------------\n")
