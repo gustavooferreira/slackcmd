@@ -1,5 +1,9 @@
 package core
 
+import (
+	"github.com/gustavooferreira/slackcmd/pkg/webserver"
+)
+
 type menu struct {
 	menu map[string]menuEntry
 }
@@ -21,7 +25,7 @@ type menuEntry struct {
 	HelpLongDescription  string
 }
 
-type CmdFunction func([]string) string
+type CmdFunction func(webserver.RequestContext, []string) string
 
 func CreateCommandEntry(entryName string, cmd CmdFunction, helpsd string, helpld string) menuEntry {
 	return menuEntry{EntryName: entryName, Target: cmd, HelpShortDescription: helpsd, HelpLongDescription: helpld}

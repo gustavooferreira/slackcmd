@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/gustavooferreira/slackcmd/pkg/webserver"
 )
 
 type NoCommandError struct {
@@ -43,12 +45,12 @@ func (e CommandIncompleteError) Error() string {
 }
 
 type CommandInventory struct {
-	AppName string
-	Menu    menu
+	Name string
+	Menu menu
 }
 
 func NewCommandInventory(appName string, menu menu) CommandInventory {
-	return CommandInventory{AppName: appName, Menu: menu}
+	return CommandInventory{Name: appName, Menu: menu}
 }
 
 func (ci CommandInventory) lookup(cmdArr []string) (me menuEntry, err error) {
@@ -135,7 +137,7 @@ func (ci CommandInventory) Tree(cmdArr *[]string, depth int) (string, error) {
 		subCmd = fmt.Sprintf("{%s}", strings.Join(*cmdArr, "-"))
 	}
 
-	result = append(result, fmt.Sprintf("◈ /%s %s %s", ci.AppName, subCmd, depthStr))
+	result = append(result, fmt.Sprintf("◈ /%s %s %s", ci.Name, subCmd, depthStr))
 	result = append(result, "│")
 
 	result = append(result, recursive_tree(startPoint, depth, []bool{})...)
@@ -201,3 +203,72 @@ func generateLine(name string, bars []bool, lastEntryItem bool) string {
 
 	return fmt.Sprintf("%s%s── %s", strings.Join(msgArr, ""), char, name)
 }
+
+func (ci CommandInventory) Logic(rc webserver.RequestContext, cmdArr []string) (string, error) {
+	// result, err := ci.Tree(nil, -1)
+	// resp := fmt.Sprintf("```%s```", result)
+
+	cmdArr = []string{"submenu1", "cmd3"}
+	result, err := ci.Match(cmdArr)
+	resp := result(rc, []string{})
+
+	return resp, err
+}
+
+// def logic(ci, cmd_arr):
+//     """cmd_arr -> list of strings with commands/options
+//     Return a tuple/class (first argument is the command):
+//         - help
+//         - tree
+//         - some_command"""
+//     # Check cmd_arr is not empty
+//     if len(cmd_arr) == 0:
+//         raise NoCommandException("no command supplied")
+
+//     commands = []
+//     options = []
+
+//     try:
+//         index = cmd_arr.index("--")
+//     except ValueError:
+//         commands = cmd_arr
+//     else:
+//         commands.extend(cmd_arr[:index])
+//         options.extend(cmd_arr[index + 1 :])
+
+//     # check it's help command
+//     if commands[0] == "help":
+//         commands = commands[1:]
+
+//         if len(cmd_arr) == 0:
+//             # Instead of this, supply generic help information
+//             raise NoCommandException("no help command supplied")
+//         else:
+//             help_short, help_long = ci.help_func(commands)
+//             return "help", (help_short, help_long)
+//     elif commands[0] == "tree":
+//         commands = commands[1:]
+
+//         if len(options) == 0:
+//             depth = 0
+//         elif len(options) == 1:
+//             try:
+//                 depth = int(options[0])
+//             except:
+//                 raise Exception("Error! tree command depth option has to be an integer")
+
+//             if depth < 0:
+//                 raise Exception("Error! tree command depth option can't be less than 0")
+//         else:
+//             raise Exception("Error! tree command only has one option")
+
+//         path = None if len(commands) == 0 else commands
+//         result = ci.tree(path=path, depth=depth)
+//         return "tree", result
+//     else:
+//         try:
+//             result = ci.match(commands)
+//         except NoCommandException:
+//             print("ERROR: no command supplied")
+//         else:
+//             return "funcnamehere", result(options)
