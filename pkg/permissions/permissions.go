@@ -1,4 +1,4 @@
-package webserver
+package permissions
 
 type Permissions struct {
 	TeamID  string
