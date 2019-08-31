@@ -45,7 +45,7 @@ func main() {
 
 	scs := webserver.NewSlashCmdServer(nil, 8080, signingSecret)
 	scs.RegisterCommand("/isp", "/slack/isp", &perm, func(rc entities.RequestContext) string {
-		return ci.Parse(rc, rc.Text)
+		return ci.Parse(rc)
 	})
 
 	scs.ListenAndServe()

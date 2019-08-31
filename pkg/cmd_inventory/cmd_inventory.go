@@ -215,7 +215,7 @@ func generateLine(name string, bars []bool, lastEntryItem bool) string {
 	return fmt.Sprintf("%s%s── %s", strings.Join(msgArr, ""), char, name)
 }
 
-func (ci CommandInventory) Parse(rc entities.RequestContext, cmd string) string {
+func (ci CommandInventory) Parse(rc entities.RequestContext) string {
 	cmdArr, err := shlex.Split(rc.Text)
 	if err != nil {
 		return "*Error*: Problem while splitting command"
