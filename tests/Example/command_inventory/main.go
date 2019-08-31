@@ -34,7 +34,7 @@ func main() {
 	mainMenu.AddEntry(menu.CreateSubMenuEntry("submenu2", submenu2, "short help submenu2", "long help submenu2"))
 	submenu1.AddEntry(menu.CreateCommandEntry("cmd3", cmd3, "short help cmd3", "long help cmd3"))
 
-	ci := cmd_inventory.NewCommandInventory("isp", mainMenu)
+	ci := cmd_inventory.NewCommandInventory("isp", "banner!", mainMenu)
 
 	// ------------------------------------------
 

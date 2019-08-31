@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/gustavooferreira/slackcmd/pkg/cmd_inventory"
 	"github.com/gustavooferreira/slackcmd/pkg/entities"
@@ -40,7 +41,9 @@ func main() {
 
 	perm := permissions.Permissions{TeamID: "T02GEFU92", Global: []string{}, Channel: chPerm}
 
-	scs := webserver.NewSlashCmdServer(nil, 8080)
+	signingSecret := os.Getenv("SLACK_SS")
+
+	scs := webserver.NewSlashCmdServer(nil, 8080, signingSecret)
 	scs.RegisterCommand("/isp", "/slack/isp", &perm, func(rc entities.RequestContext) string {
 		return ci.Parse(rc, rc.Text)
 	})

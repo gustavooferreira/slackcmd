@@ -2,7 +2,11 @@ package webserver
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
+
+	"github.com/nlopes/slack"
 
 	"github.com/gustavooferreira/slackcmd/pkg/entities"
 	"github.com/gustavooferreira/slackcmd/pkg/permissions"
@@ -11,15 +15,16 @@ import (
 type HandlerFunction func(context entities.RequestContext) string
 
 type SlashCmdServer struct {
-	mux  *http.ServeMux
-	Port uint
+	mux           *http.ServeMux
+	Port          uint
+	SigningSecret string
 }
 
-func NewSlashCmdServer(mux *http.ServeMux, port uint) SlashCmdServer {
+func NewSlashCmdServer(mux *http.ServeMux, port uint, signingSecret string) SlashCmdServer {
 	if mux == nil {
 		mux = http.NewServeMux()
 	}
-	return SlashCmdServer{mux: mux, Port: port}
+	return SlashCmdServer{mux: mux, Port: port, SigningSecret: signingSecret}
 }
 
 func (scs *SlashCmdServer) ListenAndServe() {
@@ -29,11 +34,11 @@ func (scs *SlashCmdServer) ListenAndServe() {
 
 func (scs *SlashCmdServer) RegisterCommand(cmd string, httpPath string, perm *permissions.Permissions, f HandlerFunction) {
 	scs.mux.HandleFunc(httpPath, func(w http.ResponseWriter, r *http.Request) {
-		slashCommand(w, r, cmd, perm, f)
+		slashCommand(w, r, cmd, perm, f, scs.SigningSecret)
 	})
 }
 
-func slashCommand(w http.ResponseWriter, r *http.Request, cmd string, perm *permissions.Permissions, f HandlerFunction) {
+func slashCommand(w http.ResponseWriter, r *http.Request, cmd string, perm *permissions.Permissions, f HandlerFunction, signingSecret string) {
 	// Make sure it's a POST request
 	switch r.Method {
 	case http.MethodPost:
@@ -43,6 +48,29 @@ func slashCommand(w http.ResponseWriter, r *http.Request, cmd string, perm *perm
 		return
 	}
 
+	// Verify -------------------------------------------------
+
+	verifier, err := slack.NewSecretsVerifier(r.Header, signingSecret)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	r.Body = ioutil.NopCloser(io.TeeReader(r.Body, &verifier))
+	s, err := slack.SlashCommandParse(r)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err = verifier.Ensure(); err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	_ = s
+	// -------------------------------------------------
+
 	rc := parseForm(r)
 
 	// debug
@@ -50,6 +78,15 @@ func slashCommand(w http.ResponseWriter, r *http.Request, cmd string, perm *perm
 
 	// Validate request was sent by slack
 	// Check headers for this!
+	slackSig := r.Header.Get("X-Slack-Signature")
+	slackReqTS := r.Header.Get("X-Slack-Request-Timestamp")
+
+	if slackSig == "" || slackReqTS == "" {
+		fmt.Fprintf(w, "Not authorized")
+		return
+	}
+
+	fmt.Println("SlackSig: ", slackSig, "SlackReqTS: ", slackReqTS)
 
 	// Validate request was sent by the correct command
 	if rc.Cmd != cmd {
