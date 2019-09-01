@@ -88,5 +88,6 @@ func slashCommand(w http.ResponseWriter, r *http.Request, cmd string, perm *secu
 
 	// Call handler (with context of the request passed in)
 	result := f(rc)
+	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprint(w, result)
 }
