@@ -1,8 +1,8 @@
-package permissions
+package security
 
 type Permissions struct {
 	TeamID  string
-	Global  []string
+	Global  []string // If GO had SETs, that would be best.
 	Channel map[string][]string
 }
 
@@ -13,11 +13,11 @@ func NewPermissions(teamID string, globalPermissions []string, channelPermission
 	return Permissions{TeamID: teamID, Global: globalPermissions, Channel: channelPermissions}
 }
 
-func (p *Permissions) AddGlobal(userID string) {
+func (p *Permissions) AddGlobalUser(userID string) {
 	p.Global = append(p.Global, userID)
 }
 
-func (p *Permissions) AddChannel(channelID string, userID string) {
+func (p *Permissions) AddChannelUser(channelID string, userID string) {
 	if value, ok := p.Channel[channelID]; ok {
 		value = append(value, userID)
 	} else {
@@ -36,14 +36,15 @@ func (p Permissions) ValidateGlobal(userID string) bool {
 
 func (p Permissions) ValidateChannel(channelID string, userID string) bool {
 
-	if value, ok := p.Channel[channelID]; !ok {
-		return false
-	} else {
-		for _, elem := range value {
-			if elem == userID {
-				return true
-			}
-		}
+	value, ok := p.Channel[channelID]
+	if !ok {
 		return false
 	}
+
+	for _, elem := range value {
+		if elem == userID {
+			return true
+		}
+	}
+	return false
 }
