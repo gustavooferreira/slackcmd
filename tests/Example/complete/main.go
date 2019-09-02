@@ -11,19 +11,7 @@ import (
 	"github.com/gustavooferreira/slackcmd/pkg/webserver"
 )
 
-var banner string = `ISP command provides general utilities.
-
-You can issue:
-
-/isp tree
-
-To see a tree of commands you can use
-
-
-/isp help [path to command]
-
-Shows a help message.
-`
+var banner string = `Command banner.`
 
 func main() {
 	mainMenu := layout.NewMenu()
