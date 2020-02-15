@@ -1,8 +1,8 @@
 module github.com/gustavooferreira/slackcmd
 
-go 1.12
+go 1.13
 
 require (
-	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf
-	github.com/nlopes/slack v0.5.0
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+	github.com/nlopes/slack v0.6.0
 )

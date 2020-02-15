@@ -7,12 +7,11 @@ import (
 	"net/http"
 
 	"github.com/nlopes/slack"
-
 	"github.com/gustavooferreira/slackcmd/pkg/entities"
 	"github.com/gustavooferreira/slackcmd/pkg/security"
 )
 
-type HandlerFunction func(context entities.RequestContext) string
+type HandlerFunction func(entities.RequestContext) string
 
 type SlashCmdServer struct {
 	mux  *http.ServeMux

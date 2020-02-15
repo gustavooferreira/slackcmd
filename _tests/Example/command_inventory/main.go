@@ -3,9 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/gustavooferreira/slackcmd/pkg/cmd_inventory"
 	"github.com/gustavooferreira/slackcmd/pkg/entities"
-	"github.com/gustavooferreira/slackcmd/pkg/menu"
+	"github.com/gustavooferreira/slackcmd/pkg/inventory"
 )
 
 func cmd1(rc entities.RequestContext, options []string) string {
@@ -22,17 +21,16 @@ func cmd3(rc entities.RequestContext, options []string) string {
 }
 
 func main() {
-	mainMenu := menu.NeWMenu()
-	mainMenu.AddEntry(menu.CreateCommandEntry("cmd1", cmd1, "short help cm1", "long help cmd1"))
 
-	submenu1 := menu.NeWMenu()
-	mainMenu.AddEntry(menu.CreateSubMenuEntry("submenu1", submenu1, "short help submenu1", "long help submenu1"))
-	submenu1.AddEntry(menu.CreateCommandEntry("cmd2", cmd2, "short help cmd2", "long help cmd2"))
-	submenu1.AddEntry(menu.CreateCommandEntry("cmd3", cmd3, "short help cmd3", "long help cmd3"))
+	mainMenu := inventory.NeWMenu()
+	mainMenu.AddCommandEntry("cmd1", "short help cm1", "long help cmd1", cmd1)
 
-	submenu2 := menu.NeWMenu()
-	mainMenu.AddEntry(menu.CreateSubMenuEntry("submenu2", submenu2, "short help submenu2", "long help submenu2"))
-	submenu1.AddEntry(menu.CreateCommandEntry("cmd3", cmd3, "short help cmd3", "long help cmd3"))
+	submenu1 := mainMenu.AddSubMenuEntry("submenu1", "short help submenu1", "long help submenu1")
+	submenu1.AddCommandEntry("cmd2", "short help cmd2", "long help cmd2", cmd2)
+	submenu1.AddEntry("cmd3", "short help cmd3", "long help cmd3", cmd3)
+
+	submenu2 := mainMenu.AddSubMenuEntry("submenu2", "short help submenu2", "long help submenu2")
+	submenu2.AddCommandEntry("cmd3", "short help cmd3", "long help cmd3", cmd3)
 
 	ci := cmd_inventory.NewCommandInventory("isp", "banner!", mainMenu)
 
