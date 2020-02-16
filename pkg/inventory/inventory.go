@@ -268,9 +268,33 @@ func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp 
 	helpsd := result.HelpShortDescription
 	helpld := result.HelpLongDescription
 
-	fmt.Fprintf(resp, "> *Command:* %s\n\n", strings.Join(helpCmd, " - "))
-	fmt.Fprintf(resp, "> %s\n\n", helpsd)
-	fmt.Fprintf(resp, "> %s\n", helpld)
+	msg := `
+	{
+    "response_type": "in_channel",
+	"blocks": [
+		{
+			"type": "divider"
+		},
+		{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": ":bangbang: *ERROR:* This is a plain text section block."
+			}
+		},
+        {
+			"type": "divider"
+		}
+	]
+}
+	`
+	fmt.Fprint(resp, msg)
+
+	_ = helpld
+	_ = helpsd
+	// fmt.Fprintf(resp, "> *Command:* %s\n\n", strings.Join(helpCmd, " - "))
+	// fmt.Fprintf(resp, "> %s\n\n", helpsd)
+	// fmt.Fprintf(resp, "> %s\n", helpld)
 }
 
 func (ci CommandInventory) handlerVersion(resp io.Writer) {
