@@ -27,12 +27,12 @@ func main() {
 
 	submenu1 := mainMenu.AddSubMenuEntry("submenu1", "short help submenu1", "long help submenu1")
 	submenu1.AddCommandEntry("cmd2", "short help cmd2", "long help cmd2", cmd2)
-	submenu1.AddEntry("cmd3", "short help cmd3", "long help cmd3", cmd3)
+	submenu1.AddCommandEntry("cmd3", "short help cmd3", "long help cmd3", cmd3)
 
 	submenu2 := mainMenu.AddSubMenuEntry("submenu2", "short help submenu2", "long help submenu2")
 	submenu2.AddCommandEntry("cmd3", "short help cmd3", "long help cmd3", cmd3)
 
-	ci := cmd_inventory.NewCommandInventory("isp", "banner!", mainMenu)
+	ci := inventory.NewCommandInventory("isp", "banner!", mainMenu)
 
 	// ------------------------------------------
 

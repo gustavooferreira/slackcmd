@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/shlex"
 	"github.com/gustavooferreira/slackcmd/pkg/entities"
-	"github.com/gustavooferreira/slackcmd/pkg/layout"
 )
 
 // Errors -----
@@ -54,30 +53,30 @@ func (e CommandIncompleteError) Error() string {
 type CommandInventory struct {
 	Name   string
 	Banner string
-	Menu   layout.Menu
+	Menu   Menu
 }
 
-func NewCommandInventory(name string, banner string, menu layout.Menu) CommandInventory {
+func NewCommandInventory(name string, banner string, menu Menu) CommandInventory {
 	return CommandInventory{Name: name, Banner: banner, Menu: menu}
 }
 
-func (ci CommandInventory) lookup(cmdArr []string) (me layout.MenuEntry, err error) {
+func (ci CommandInventory) lookup(cmdArr []string) (me menuEntry, err error) {
 
 	if len(cmdArr) == 0 {
 		return me, &NoCommandError{Msg: "no command supplied"}
 	}
 
-	lookup := layout.MenuEntry{"", ci.Menu, "", ""}
+	lookup := menuEntry{Name: "", HelpShortDescription: "", HelpLongDescription: "", Type: menuEntryType_SubMenu, SubMenu: &ci.Menu}
 
 	for _, arg := range cmdArr {
-		if value, ok := lookup.Target.(layout.Menu); !ok {
-			return me, &CommandNotFoundError{Msg: "command not found", Cmd: strings.Join(cmdArr, " ")}
-		} else {
-			if result, ok := value.Entries[arg]; ok {
+		if lookup.Type == menuEntryType_SubMenu {
+			if result, ok := lookup.SubMenu.Entries[arg]; ok {
 				lookup = result
 			} else {
 				return me, &EntryNotFoundError{Msg: "entry not found", Cmd: strings.Join(cmdArr, " "), ValidOptions: []string{"yolo1", "yolo2"}}
 			}
+		} else {
+			return me, &CommandNotFoundError{Msg: "command not found", Cmd: strings.Join(cmdArr, " ")}
 		}
 	}
 	return lookup, nil
@@ -92,42 +91,42 @@ func (ci CommandInventory) HelpFunc(cmdArr []string) (helpsd string, helpld stri
 	return result.HelpShortDescription, result.HelpLongDescription, nil
 }
 
-func (ci CommandInventory) Match(cmdArr []string) (layout.CmdFunction, error) {
+func (ci CommandInventory) Match(cmdArr []string) (CmdFunction, error) {
 	result, err := ci.lookup(cmdArr)
 	if err != nil {
 		return nil, err
 	}
 
-	if _, ok := result.Target.(layout.Menu); ok {
+	if result.Type == menuEntryType_SubMenu {
 		return nil, &CommandIncompleteError{Msg: "command incomplete", Cmd: strings.Join(cmdArr, " ")}
 	}
 
-	return result.Target.(layout.CmdFunction), nil
+	return result.Cmd, nil
 }
 
+// Tree returns a drawing of the menu
+// cmdArr is the starting point and depth is how deep the recursion should go
 func (ci CommandInventory) Tree(cmdArr *[]string, depth int) (string, error) {
 	result := []string{}
 
 	if depth < -1 {
-		return "", errors.New("depth needs to be equal or greater than -1")
+		return "", errors.New("depth needs to be greater or equal to -1")
 	}
 
-	var startPoint layout.Menu
+	var startPoint Menu
 
 	if cmdArr == nil {
 		startPoint = ci.Menu
 	} else {
 		lookupResult, err := ci.lookup(*cmdArr)
-
 		if err != nil {
 			return "", err
 		}
 
-		if value, ok := lookupResult.Target.(layout.Menu); ok {
-			startPoint = value
-		} else {
-			return "", errors.New("error HERE!!")
+		if lookupResult.Type != menuEntryType_SubMenu {
+			return "", errors.New("starting point should be a menu")
 		}
+		startPoint = *lookupResult.SubMenu
 	}
 
 	var depthStr string
@@ -162,7 +161,7 @@ func (ci CommandInventory) Tree(cmdArr *[]string, depth int) (string, error) {
 	return strings.Join(result, "\n"), nil
 }
 
-func recursive_tree(point layout.Menu, depth int, bars []bool) []string {
+func recursive_tree(point Menu, depth int, bars []bool) []string {
 	result := []string{}
 
 	length := len(point.Entries)
@@ -179,7 +178,7 @@ func recursive_tree(point layout.Menu, depth int, bars []bool) []string {
 
 		result = append(result, generateLine(entry.Name, bars, lastEntryItem))
 
-		if value, ok := entry.Target.(layout.Menu); ok {
+		if entry.Type == menuEntryType_SubMenu {
 			d := 0
 
 			if depth == -1 {
@@ -189,7 +188,7 @@ func recursive_tree(point layout.Menu, depth int, bars []bool) []string {
 			}
 
 			if d != 0 {
-				result = append(result, recursive_tree(value, d, append(bars, !lastEntryItem))...)
+				result = append(result, recursive_tree(*entry.SubMenu, d, append(bars, !lastEntryItem))...)
 			}
 		}
 		i++
@@ -255,6 +254,7 @@ func (ci CommandInventory) Parse(rc entities.RequestContext) string {
 	}
 }
 
+// TODO: check if command is "help tree" show help stuff for tree command!
 func (ci CommandInventory) helpHandler(helpCmd []string, options []string) string {
 	if len(helpCmd) == 0 {
 		return ci.Banner
@@ -298,9 +298,9 @@ func (ci CommandInventory) treeHandler(options []string) string {
 	return resp
 }
 
+// TODO: Cmd might be nil, careful with that!
 func (ci CommandInventory) actionHandler(rc entities.RequestContext, commands []string, options []string) string {
 	f, err := ci.Match(commands)
-
 	if err != nil {
 		return fmt.Sprintln(err)
 	} else {

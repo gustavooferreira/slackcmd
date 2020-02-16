@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/nlopes/slack"
 	"github.com/gustavooferreira/slackcmd/pkg/entities"
 	"github.com/gustavooferreira/slackcmd/pkg/security"
+	"github.com/nlopes/slack"
 )
 
 type HandlerFunction func(entities.RequestContext) string
@@ -38,10 +38,7 @@ func (scs *SlashCmdServer) RegisterCommand(cmd string, httpPath string, perm *se
 
 func slashCommand(w http.ResponseWriter, r *http.Request, cmd string, perm *security.Permissions, f HandlerFunction, signSecret string) {
 	// Make sure it's a POST request
-	switch r.Method {
-	case http.MethodPost:
-		// pass
-	default:
+	if r.Method != http.MethodPost {
 		fmt.Fprintf(w, "Only POST method is supported.")
 		return
 	}
