@@ -255,13 +255,13 @@ func (ci CommandInventory) Parse(rc entities.RequestContext, resp io.Writer) {
 // TODO: check if command is "help tree" show help stuff for tree command!
 func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp io.Writer) {
 	if len(helpCmd) == 0 {
-		fmt.Fprint(resp, ci.Banner)
+		fmt.Fprintf(resp, "```%s```", ci.Banner)
 		return
 	}
 
 	result, err := ci.lookup(helpCmd)
 	if err != nil {
-		handlerError(resp, err.Error())
+		HandlerError(resp, err.Error())
 		return
 	}
 
@@ -286,6 +286,7 @@ func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp 
 
 func (ci CommandInventory) handlerVersion(resp io.Writer) {
 	msg := `{
+    "response_type": "ephemeral",
 	"blocks": [
 		{"type": "divider"},
 		{
@@ -328,22 +329,43 @@ func (ci CommandInventory) handlerTree(options []string, resp io.Writer) {
 		}
 	}
 
-	result, _ := ci.tree(path, depth)
-	fmt.Fprintf(resp, "```%s```", result)
+	result, err := ci.tree(path, depth)
+	if err != nil {
+		HandlerError(resp, err.Error())
+		return
+	}
+
+	respType := "ephemeral"
+	if 1 ==1 {
+		respType = "in_channel"
+	}
+
+	msg := `{
+    "response_type": "%s",
+	"blocks": [
+		{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": "```%s```"
+			}
+		}
+	]}`
+	fmt.Fprintf(resp, msg, respType, result)
 }
 
 // TODO: Cmd might be nil, careful with that!
 func (ci CommandInventory) handlerAction(rc entities.RequestContext, commands []string, options []string, resp io.Writer) {
 	f, err := ci.match(commands)
 	if err != nil {
-		fmt.Fprintln(resp, err)
+		HandlerError(resp, err.Error())
 		return
 	}
 
 	f(rc, options, resp)
 }
 
-func handlerError(resp io.Writer, errorMsg string) {
+func HandlerError(resp io.Writer, errorMsg string) {
 	msg := `{
     "response_type": "ephemeral",
 	"blocks": [
