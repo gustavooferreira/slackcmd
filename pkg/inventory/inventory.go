@@ -336,7 +336,7 @@ func (ci CommandInventory) handlerTree(options []string, resp io.Writer) {
 	}
 
 	respType := "ephemeral"
-	if 1 ==1 {
+	if 1 == 1 {
 		respType = "in_channel"
 	}
 
@@ -347,11 +347,11 @@ func (ci CommandInventory) handlerTree(options []string, resp io.Writer) {
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": "```%s```"
+				"text": "%s"
 			}
 		}
 	]}`
-	fmt.Fprintf(resp, msg, respType, result)
+	fmt.Fprintf(resp, msg, respType, fmt.Sprintf("```%s```", result))
 }
 
 // TODO: Cmd might be nil, careful with that!
