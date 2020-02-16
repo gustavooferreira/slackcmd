@@ -84,7 +84,7 @@ func (ci CommandInventory) lookup(cmdArr []string) (me menuEntry, err error) {
 	return lookup, nil
 }
 
-func (ci CommandInventory) Match(cmdArr []string) (CmdFunction, error) {
+func (ci CommandInventory) match(cmdArr []string) (CmdFunction, error) {
 	result, err := ci.lookup(cmdArr)
 	if err != nil {
 		return nil, err
@@ -99,7 +99,7 @@ func (ci CommandInventory) Match(cmdArr []string) (CmdFunction, error) {
 
 // Tree returns a drawing of the menu
 // cmdArr is the starting point and depth is how deep the recursion should go
-func (ci CommandInventory) Tree(cmdArr *[]string, depth int) (string, error) {
+func (ci CommandInventory) tree(cmdArr *[]string, depth int) (string, error) {
 	result := []string{}
 
 	if depth < -1 {
@@ -242,18 +242,18 @@ func (ci CommandInventory) Parse(rc entities.RequestContext, resp io.Writer) {
 	}
 
 	if commands[0] == "help" {
-		ci.helpHandler(commands[1:], options, resp)
+		ci.handlerHelp(commands[1:], options, resp)
 	} else if commands[0] == "version" {
-		ci.versionHandler(resp)
+		ci.handlerVersion(resp)
 	} else if commands[0] == "tree" {
-		ci.treeHandler(options, resp)
+		ci.handlerTree(options, resp)
 	} else {
-		ci.actionHandler(rc, commands, options, resp)
+		ci.handlerAction(rc, commands, options, resp)
 	}
 }
 
 // TODO: check if command is "help tree" show help stuff for tree command!
-func (ci CommandInventory) helpHandler(helpCmd []string, options []string, resp io.Writer) {
+func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp io.Writer) {
 	if len(helpCmd) == 0 {
 		fmt.Fprint(resp, ci.Banner)
 		return
@@ -268,16 +268,16 @@ func (ci CommandInventory) helpHandler(helpCmd []string, options []string, resp 
 	helpsd := result.HelpShortDescription
 	helpld := result.HelpLongDescription
 
-	fmt.Fprintf(resp, "> *Command:* %s\n", strings.Join(helpCmd, " - "))
-	fmt.Fprintf(resp, "> *Short Help:* %s\n", helpsd)
-	fmt.Fprintf(resp, "> *Long Help:* %s\n", helpld)
+	fmt.Fprintf(resp, "> *Command:* %s\n\n", strings.Join(helpCmd, " - "))
+	fmt.Fprintf(resp, "> %s\n\n", helpsd)
+	fmt.Fprintf(resp, "> %s\n", helpld)
 }
 
-func (ci CommandInventory) versionHandler(resp io.Writer) {
+func (ci CommandInventory) handlerVersion(resp io.Writer) {
 	fmt.Fprintf(resp, "Version: %s", ci.Version)
 }
 
-func (ci CommandInventory) treeHandler(options []string, resp io.Writer) {
+func (ci CommandInventory) handlerTree(options []string, resp io.Writer) {
 	var path *[]string
 	var depth = -1
 	var err error
@@ -304,13 +304,13 @@ func (ci CommandInventory) treeHandler(options []string, resp io.Writer) {
 		}
 	}
 
-	result, _ := ci.Tree(path, depth)
+	result, _ := ci.tree(path, depth)
 	fmt.Fprintf(resp, "```%s```", result)
 }
 
 // TODO: Cmd might be nil, careful with that!
-func (ci CommandInventory) actionHandler(rc entities.RequestContext, commands []string, options []string, resp io.Writer) {
-	f, err := ci.Match(commands)
+func (ci CommandInventory) handlerAction(rc entities.RequestContext, commands []string, options []string, resp io.Writer) {
+	f, err := ci.match(commands)
 	if err != nil {
 		fmt.Fprintln(resp, err)
 		return

@@ -58,7 +58,7 @@ func TestInventoryTree(t *testing.T) {
 
 	ci := NewCommandInventory("cmd", "my banner", "v1.5.2", mainMenu)
 
-	treeStr, err := ci.Tree(nil, -1)
+	treeStr, err := ci.tree(nil, -1)
 	if err != nil {
 		t.Errorf("error %s", err.Error())
 	}
