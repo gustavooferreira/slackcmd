@@ -51,12 +51,13 @@ func (e CommandIncompleteError) Error() string {
 // -----------
 
 type CommandInventory struct {
-	Name   string
-	Banner string
-	Menu   Menu
+	Name    string
+	Banner  string
+	Version string
+	Menu    Menu
 }
 
-func NewCommandInventory(name string, banner string, menu Menu) CommandInventory {
+func NewCommandInventory(name string, banner string, version string, menu Menu) CommandInventory {
 	return CommandInventory{Name: name, Banner: banner, Menu: menu}
 }
 
@@ -148,6 +149,7 @@ func (ci CommandInventory) Tree(cmdArr *[]string, depth int) (string, error) {
 
 	if cmdArr == nil {
 		result = append(result, "│")
+		result = append(result, "├── version")
 		result = append(result, "├── tree")
 		result = append(result, "├── help")
 	} else {
@@ -247,6 +249,8 @@ func (ci CommandInventory) Parse(rc entities.RequestContext) string {
 
 	if commands[0] == "help" {
 		return ci.helpHandler(commands[1:], options)
+	} else if commands[0] == "version" {
+		return ci.versionHandler()
 	} else if commands[0] == "tree" {
 		return ci.treeHandler(options)
 	} else {
@@ -266,6 +270,10 @@ func (ci CommandInventory) helpHandler(helpCmd []string, options []string) strin
 	}
 
 	return helpld
+}
+
+func (ci CommandInventory) versionHandler() string {
+	return fmt.Sprintf("Version: %s\n", ci.Version)
 }
 
 func (ci CommandInventory) treeHandler(options []string) string {

@@ -23,7 +23,7 @@ func main() {
 	submenu2 := mainMenu.AddSubMenuEntry("submenu2", "short help submenu2", "long help submenu2")
 	submenu2.AddCommandEntry("cmd3", "short help cmd3", "long help cmd3", cmd3)
 
-	ci := inventory.NewCommandInventory("isp", banner, mainMenu)
+	ci := inventory.NewCommandInventory("isp", banner, "v1.5.2", mainMenu)
 
 	chPerm := map[string][]string{"GK9U15UJ3": []string{"U451E8XQ8"}}
 	perm := security.NewPermissions("T02GEFU92", []string{}, chPerm)
