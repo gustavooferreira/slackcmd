@@ -276,12 +276,11 @@ func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp 
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": ""> :grey_question: *Command:* %s\n>\n>%s"
+				"text": "> :grey_question: *Command:* %s\n>\n>%s"
 			}
 		},
         {"type": "divider"}
-	]
-}`
+	]}`
 	fmt.Fprintf(resp, msg, cmd, helpld)
 }
 
