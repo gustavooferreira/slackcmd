@@ -58,7 +58,7 @@ type CommandInventory struct {
 }
 
 func NewCommandInventory(name string, banner string, version string, menu Menu) CommandInventory {
-	return CommandInventory{Name: name, Banner: banner, Menu: menu}
+	return CommandInventory{Name: name, Banner: banner, Version: version, Menu: menu}
 }
 
 func (ci CommandInventory) lookup(cmdArr []string) (me menuEntry, err error) {
