@@ -268,8 +268,9 @@ func (ci CommandInventory) helpHandler(helpCmd []string, options []string, resp 
 	helpsd := result.HelpShortDescription
 	helpld := result.HelpLongDescription
 
-	cmd := fmt.Sprintf("{%s}", strings.Join(helpCmd, "-"))
-	fmt.Fprintf(resp, "> *Command:* %s\n*Help:* %s\n      %s```", cmd, helpsd, helpld)
+	fmt.Fprintf(resp, "> *Command:* %s\n", strings.Join(helpCmd, " - "))
+	fmt.Fprintf(resp, "> *Short Help:* %s\n", helpsd)
+	fmt.Fprintf(resp, "> *Long Help:* %s\n", helpld)
 }
 
 func (ci CommandInventory) versionHandler(resp io.Writer) {
