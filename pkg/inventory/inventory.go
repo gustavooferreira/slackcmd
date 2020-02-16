@@ -265,36 +265,24 @@ func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp 
 		return
 	}
 
-	helpsd := result.HelpShortDescription
+	cmd := strings.Join(helpCmd, " - ")
 	helpld := result.HelpLongDescription
 
-	msg := `
-	{
+	msg := `{
     "response_type": "ephemeral",
 	"blocks": [
-		{
-			"type": "divider"
-		},
+		{"type": "divider"},
 		{
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": ":bangbang: *ERROR:* This is a plain text section block."
+				"text": ""> :grey_question: *Command:* %s\n>\n>%s"
 			}
 		},
-        {
-			"type": "divider"
-		}
+        {"type": "divider"}
 	]
-}
-	`
-	fmt.Fprint(resp, msg)
-
-	_ = helpld
-	_ = helpsd
-	// fmt.Fprintf(resp, "> *Command:* %s\n\n", strings.Join(helpCmd, " - "))
-	// fmt.Fprintf(resp, "> %s\n\n", helpsd)
-	// fmt.Fprintf(resp, "> %s\n", helpld)
+}`
+	fmt.Fprintf(resp, msg, cmd, helpld)
 }
 
 func (ci CommandInventory) handlerVersion(resp io.Writer) {
