@@ -270,7 +270,7 @@ func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp 
 
 	msg := `
 	{
-    "response_type": "in_channel",
+    "response_type": "ephemeral",
 	"blocks": [
 		{
 			"type": "divider"
