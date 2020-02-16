@@ -1,10 +1,14 @@
 package inventory
 
-import "github.com/gustavooferreira/slackcmd/pkg/entities"
+import (
+	"io"
+
+	"github.com/gustavooferreira/slackcmd/pkg/entities"
+)
 
 // CmdFunction is the function that executes the command.
 // It gets the Request context and a list of arguments passed to the command
-type CmdFunction func(entities.RequestContext, []string) string
+type CmdFunction func(entities.RequestContext, []string, io.Writer) error
 
 type menuEntryType int
 

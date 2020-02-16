@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/gustavooferreira/slackcmd/pkg/entities"
@@ -32,26 +34,29 @@ func main() {
 
 	scs := webserver.NewSlashCmdServer(nil, 8080)
 	scs.RegisterCommand("/isp", "/slack/isp", &perm, signingSecret, func(rc entities.RequestContext) string {
-		return ci.Parse(rc)
+		var buf bytes.Buffer
+		ci.Parse(rc, &buf)
+		return buf.String()
 	})
 
 	scs.ListenAndServe()
 }
 
-func cmd1(rc entities.RequestContext, options []string) string {
+func cmd1(rc entities.RequestContext, options []string, resp io.Writer) error {
 	fmt.Printf("Request Context %+v\n", rc)
 	fmt.Println("Options:", options)
-	return "YOLO1!"
+	fmt.Fprintf(resp, "YOLO1!")
+	return nil
 }
-
-func cmd2(rc entities.RequestContext, options []string) string {
+func cmd2(rc entities.RequestContext, options []string, resp io.Writer) error {
 	fmt.Printf("Request Context %+v\n", rc)
 	fmt.Println("Options:", options)
-	return "YOLO2!"
+	fmt.Fprintf(resp, "YOLO2!")
+	return nil
 }
-
-func cmd3(rc entities.RequestContext, options []string) string {
+func cmd3(rc entities.RequestContext, options []string, resp io.Writer) error {
 	fmt.Printf("Request Context %+v\n", rc)
 	fmt.Println("Options:", options)
-	return "YOLO3!"
+	fmt.Fprintf(resp, "YOLO3!")
+	return nil
 }

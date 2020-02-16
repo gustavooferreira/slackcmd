@@ -1,6 +1,8 @@
 package inventory
 
 import (
+	"fmt"
+	"io"
 	"testing"
 
 	"github.com/gustavooferreira/slackcmd/pkg/entities"
@@ -16,8 +18,9 @@ func TestMenu(t *testing.T) {
 }
 
 func TestMenuEntry(t *testing.T) {
-	cmd1 := func(rc entities.RequestContext, options []string) string {
-		return "cmd1"
+	cmd1 := func(rc entities.RequestContext, options []string, resp io.Writer) error {
+		fmt.Fprint(resp, "cmd1")
+		return nil
 	}
 
 	mainMenu := NewMenu()

@@ -3,6 +3,7 @@ package inventory
 import (
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 
@@ -81,15 +82,6 @@ func (ci CommandInventory) lookup(cmdArr []string) (me menuEntry, err error) {
 		}
 	}
 	return lookup, nil
-}
-
-func (ci CommandInventory) HelpFunc(cmdArr []string) (helpsd string, helpld string, err error) {
-	result, err := ci.lookup(cmdArr)
-	if err != nil {
-		return "", "", err
-	}
-
-	return result.HelpShortDescription, result.HelpLongDescription, nil
 }
 
 func (ci CommandInventory) Match(cmdArr []string) (CmdFunction, error) {
@@ -220,14 +212,16 @@ func generateLine(name string, bars []bool, lastEntryItem bool) string {
 	return fmt.Sprintf("%s%s── %s", strings.Join(msgArr, ""), char, name)
 }
 
-func (ci CommandInventory) Parse(rc entities.RequestContext) string {
+func (ci CommandInventory) Parse(rc entities.RequestContext, resp io.Writer) {
 	cmdArr, err := shlex.Split(rc.Text)
 	if err != nil {
-		return "*Error*: Problem while splitting command"
+		fmt.Fprintf(resp, "*Error*: Problem while splitting command")
+		return
 	}
 
 	if len(cmdArr) == 0 {
-		return fmt.Sprintf("```%s```", ci.Banner)
+		fmt.Fprintf(resp, "```%s```", ci.Banner)
+		return
 	}
 
 	var sep int
@@ -248,35 +242,41 @@ func (ci CommandInventory) Parse(rc entities.RequestContext) string {
 	}
 
 	if commands[0] == "help" {
-		return ci.helpHandler(commands[1:], options)
+		ci.helpHandler(commands[1:], options, resp)
 	} else if commands[0] == "version" {
-		return ci.versionHandler()
+		ci.versionHandler(resp)
 	} else if commands[0] == "tree" {
-		return ci.treeHandler(options)
+		ci.treeHandler(options, resp)
 	} else {
-		return ci.actionHandler(rc, commands, options)
+		ci.actionHandler(rc, commands, options, resp)
 	}
 }
 
 // TODO: check if command is "help tree" show help stuff for tree command!
-func (ci CommandInventory) helpHandler(helpCmd []string, options []string) string {
+func (ci CommandInventory) helpHandler(helpCmd []string, options []string, resp io.Writer) {
 	if len(helpCmd) == 0 {
-		return ci.Banner
+		fmt.Fprint(resp, ci.Banner)
+		return
 	}
 
-	_, helpld, err := ci.HelpFunc(helpCmd)
+	result, err := ci.lookup(helpCmd)
 	if err != nil {
-		return fmt.Sprintf("Error: %s", err)
+		fmt.Fprint(resp, err.Error())
+		return
 	}
 
-	return helpld
+	helpsd := result.HelpShortDescription
+	helpld := result.HelpLongDescription
+
+	cmd := fmt.Sprintf("{%s}", strings.Join(helpCmd, "-"))
+	fmt.Fprintf(resp, "> *Command:* %s\n*Help:* %s\n      %s```", cmd, helpsd, helpld)
 }
 
-func (ci CommandInventory) versionHandler() string {
-	return fmt.Sprintf("Version: %s\n", ci.Version)
+func (ci CommandInventory) versionHandler(resp io.Writer) {
+	fmt.Fprintf(resp, "Version: %s", ci.Version)
 }
 
-func (ci CommandInventory) treeHandler(options []string) string {
+func (ci CommandInventory) treeHandler(options []string, resp io.Writer) {
 	var path *[]string
 	var depth = -1
 	var err error
@@ -293,25 +293,27 @@ func (ci CommandInventory) treeHandler(options []string) string {
 	if len(options) == 2 {
 		depth, err = strconv.Atoi(options[1])
 		if err != nil {
-			return "ERROR!!! depth needs to be an int"
+			fmt.Fprint(resp, "ERROR!!! depth needs to be an int")
+			return
 		}
 
 		if depth < 0 {
-			return "ERROR!!! depth needs to be greater or equal to 0"
+			fmt.Fprintf(resp, "ERROR!!! depth needs to be greater or equal to 0")
+			return
 		}
 	}
 
 	result, _ := ci.Tree(path, depth)
-	resp := fmt.Sprintf("```%s```", result)
-	return resp
+	fmt.Fprintf(resp, "```%s```", result)
 }
 
 // TODO: Cmd might be nil, careful with that!
-func (ci CommandInventory) actionHandler(rc entities.RequestContext, commands []string, options []string) string {
+func (ci CommandInventory) actionHandler(rc entities.RequestContext, commands []string, options []string, resp io.Writer) {
 	f, err := ci.Match(commands)
 	if err != nil {
-		return fmt.Sprintln(err)
-	} else {
-		return f(rc, options)
+		fmt.Fprintln(resp, err)
+		return
 	}
+
+	f(rc, options, resp)
 }

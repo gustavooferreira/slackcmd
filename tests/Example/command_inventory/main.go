@@ -1,23 +1,28 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 
 	"github.com/gustavooferreira/slackcmd/pkg/entities"
 	"github.com/gustavooferreira/slackcmd/pkg/inventory"
 )
 
-func cmd1(rc entities.RequestContext, options []string) string {
+func cmd1(rc entities.RequestContext, options []string, resp io.Writer) error {
 	fmt.Printf("Request Context %+v\n", rc)
-	return "YOLO1!"
+	fmt.Fprintf(resp, "YOLO1!")
+	return nil
 }
-func cmd2(rc entities.RequestContext, options []string) string {
+func cmd2(rc entities.RequestContext, options []string, resp io.Writer) error {
 	fmt.Printf("Request Context %+v\n", rc)
-	return "YOLO2!"
+	fmt.Fprintf(resp, "YOLO2!")
+	return nil
 }
-func cmd3(rc entities.RequestContext, options []string) string {
+func cmd3(rc entities.RequestContext, options []string, resp io.Writer) error {
 	fmt.Printf("Request Context %+v\n", rc)
-	return "YOLO3!"
+	fmt.Fprintf(resp, "YOLO3!")
+	return nil
 }
 
 func main() {
@@ -37,23 +42,21 @@ func main() {
 	// ------------------------------------------
 
 	fmt.Printf("Main Menu: %+v\n", mainMenu)
-	fmt.Println("--------------------------------------\n")
+	fmt.Println("--------------------------------------")
 
 	cmdArr := []string{"submenu1", "cmd2"}
 	// cmdArr := []string{"submenu"}
 	// cmdArr := []string{"submenu", "cmd2", "yolo"}
 
-	a, b, err := ci.HelpFunc(cmdArr)
-	fmt.Println(a, "---", b, "---", err)
-	fmt.Println("--------------------------------------\n")
-
 	f, err := ci.Match(cmdArr)
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		fmt.Println(f(entities.RequestContext{}, []string{}))
+		var buf bytes.Buffer
+		f(entities.RequestContext{}, []string{}, &buf)
+		fmt.Println(buf.String())
 	}
-	fmt.Println("--------------------------------------\n")
+	fmt.Println("--------------------------------------")
 
 	result, err := ci.Tree(nil, 0)
 	if err != nil {
