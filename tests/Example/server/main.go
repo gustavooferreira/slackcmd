@@ -4,15 +4,15 @@ import (
 	"fmt"
 
 	"github.com/gustavooferreira/slackcmd/pkg/entities"
-	"github.com/gustavooferreira/slackcmd/pkg/permissions"
+	"github.com/gustavooferreira/slackcmd/pkg/security"
 	"github.com/gustavooferreira/slackcmd/pkg/webserver"
 )
 
 func main() {
-	perm := permissions.Permissions{}
+	perm := security.Permissions{}
 
 	scs := webserver.NewSlashCmdServer(nil, 8080)
-	scs.RegisterCommand("/isp", "/slack/isp", perm, Hello)
+	scs.RegisterCommand("/isp", "/slack/isp", &perm, "signSecret", Hello)
 	scs.ListenAndServe()
 }
 

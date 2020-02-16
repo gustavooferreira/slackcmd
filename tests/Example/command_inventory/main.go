@@ -22,7 +22,7 @@ func cmd3(rc entities.RequestContext, options []string) string {
 
 func main() {
 
-	mainMenu := inventory.NeWMenu()
+	mainMenu := inventory.NewMenu()
 	mainMenu.AddCommandEntry("cmd1", "short help cm1", "long help cmd1", cmd1)
 
 	submenu1 := mainMenu.AddSubMenuEntry("submenu1", "short help submenu1", "long help submenu1")
@@ -36,30 +36,29 @@ func main() {
 
 	// ------------------------------------------
 
-	fmt.Printf("%+v\n", mainMenu)
+	fmt.Printf("Main Menu: %+v\n", mainMenu)
 	fmt.Println("--------------------------------------\n")
 
-	cmdArr := []string{"submenu", "cmd1"}
+	cmdArr := []string{"submenu1", "cmd2"}
 	// cmdArr := []string{"submenu"}
 	// cmdArr := []string{"submenu", "cmd2", "yolo"}
 
 	a, b, err := ci.HelpFunc(cmdArr)
-
-	fmt.Println(a, b, err)
-
+	fmt.Println(a, "---", b, "---", err)
 	fmt.Println("--------------------------------------\n")
 
 	f, err := ci.Match(cmdArr)
-
 	if err != nil {
 		fmt.Println(err)
 	} else {
 		fmt.Println(f(entities.RequestContext{}, []string{}))
 	}
-
 	fmt.Println("--------------------------------------\n")
 
 	result, err := ci.Tree(nil, 0)
-
-	fmt.Println(result)
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+	} else {
+		fmt.Println(result)
+	}
 }
