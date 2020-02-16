@@ -268,8 +268,23 @@ func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp 
 	cmd := strings.Join(helpCmd, " - ")
 	helpld := result.HelpLongDescription
 
+	broadcast := false
+
+	if len(options) != 0 {
+		for _, opt := range options {
+			if opt == "broadcast=all" {
+				broadcast = true
+			}
+		}
+	}
+
+	respType := "ephemeral"
+	if broadcast {
+		respType = "in_channel"
+	}
+
 	msg := `{
-    "response_type": "ephemeral",
+    "response_type": "%s",
 	"blocks": [
 		{"type": "divider"},
 		{
@@ -281,7 +296,7 @@ func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp 
 		},
         {"type": "divider"}
 	]}`
-	fmt.Fprintf(resp, msg, cmd, helpld)
+	fmt.Fprintf(resp, msg, respType, cmd, helpld)
 }
 
 func (ci CommandInventory) handlerVersion(resp io.Writer) {
