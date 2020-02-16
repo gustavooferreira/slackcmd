@@ -261,7 +261,7 @@ func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp 
 
 	result, err := ci.lookup(helpCmd)
 	if err != nil {
-		fmt.Fprint(resp, err.Error())
+		handlerError(resp, err.Error())
 		return
 	}
 
@@ -285,7 +285,20 @@ func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp 
 }
 
 func (ci CommandInventory) handlerVersion(resp io.Writer) {
-	fmt.Fprintf(resp, "Version: %s", ci.Version)
+	msg := `{
+	"blocks": [
+		{"type": "divider"},
+		{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": "> :package: *Version:* %s"
+			}
+		},
+        {"type": "divider"}
+	]}`
+
+	fmt.Fprintf(resp, msg, ci.Version)
 }
 
 func (ci CommandInventory) handlerTree(options []string, resp io.Writer) {
@@ -328,4 +341,22 @@ func (ci CommandInventory) handlerAction(rc entities.RequestContext, commands []
 	}
 
 	f(rc, options, resp)
+}
+
+func handlerError(resp io.Writer, errorMsg string) {
+	msg := `{
+    "response_type": "ephemeral",
+	"blocks": [
+		{"type": "divider"},
+		{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": "> :bangbang: *ERROR:* %s"
+			}
+		},
+        {"type": "divider"}
+	]}`
+
+	fmt.Fprintf(resp, msg, errorMsg)
 }
