@@ -273,11 +273,8 @@ func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp 
 	broadcast := false
 
 	for _, opt := range options {
-		optionsArr, err := strings.Split(opt, "=")
-		if err != nil {
-			HandlerError(resp, "error while splitting options")
-			return
-		}
+		optionsArr := strings.Split(opt, "=")
+
 		if len(optionsArr) != 2 {
 			HandlerError(resp, "error while splitting options, too many '='")
 			return
