@@ -253,7 +253,9 @@ func (ci CommandInventory) Parse(rc entities.RequestContext, resp io.Writer) {
 }
 
 // TODO: check if command is "help tree" show help stuff for tree command!
+// Do the same for help version
 func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp io.Writer) {
+	// TODO: show help for the help command instead
 	if len(helpCmd) == 0 {
 		fmt.Fprintf(resp, "```%s```", ci.Banner)
 		return
@@ -270,11 +272,19 @@ func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp 
 
 	broadcast := false
 
-	if len(options) != 0 {
-		for _, opt := range options {
-			if opt == "broadcast=all" {
-				broadcast = true
-			}
+	for _, opt := range options {
+		optionsArr, err := strings.Split(opt, "=")
+		if err != nil {
+			HandlerError(resp, "error while splitting options")
+			return
+		}
+		if len(optionsArr) != 2 {
+			HandlerError(resp, "error while splitting options, too many '='")
+			return
+		}
+
+		if optionsArr[0] == "broadcast" && optionsArr[1] == "all" {
+			broadcast = true
 		}
 	}
 
@@ -291,7 +301,7 @@ func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp 
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": "> :grey_question: *Command:* %s\n>\n>%s"
+				"text": "> :grey_question: *Path:* %s\n>\n>%s"
 			}
 		},
         {"type": "divider"}
