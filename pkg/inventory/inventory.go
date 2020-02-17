@@ -134,7 +134,7 @@ func (ci CommandInventory) tree(cmdArr *[]string, depth int) (string, error) {
 	if cmdArr == nil {
 		subCmd = ""
 	} else {
-		subCmd = fmt.Sprintf("{%s}", strings.Join(*cmdArr, "-"))
+		subCmd = fmt.Sprintf("{%s}", strings.Join(*cmdArr, "/"))
 	}
 
 	result = append(result, fmt.Sprintf("◈ /%s %s %s", ci.Name, subCmd, depthStr))
@@ -267,7 +267,7 @@ func (ci CommandInventory) handlerHelp(helpCmd []string, options []string, resp 
 		return
 	}
 
-	cmd := strings.Join(helpCmd, " - ")
+	cmd := strings.Join(helpCmd, " / ")
 	helpld := result.HelpLongDescription
 
 	broadcast := false
